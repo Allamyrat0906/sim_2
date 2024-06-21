@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar Collector Efficiency Simulation</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input {
+        width: calc(100% - 20px);
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      #result {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 18px;
+        color: #007bff;
+        transition: color 0.3s ease;
+      }
+
+      canvas {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Solar Collector Efficiency Simulation</h1>
+      <div class="input-group">
+        <label for="volume">Throughput Volume (L/min):</label>
+        <input type="number" id="volume" step="0.1" value="10" />
+      </div>
+      <div class="input-group">
+        <label for="tempRise">Temperature Rise (°C):</label>
+        <input type="number" id="tempRise" step="0.1" value="5" />
+      </div>
+      <button onclick="simulateEfficiency()">Simulate</button>
+      <div id="result"></div>
+      <canvas id="canvas" width="400" height="200"></canvas>
+    </div>
+    <script>
+      function simulateEfficiency() {
+        const volume = parseFloat(document.getElementById("volume").value);
+        const tempRise = parseFloat(document.getElementById("tempRise").value);
+
+        const specificHeatCapacity = 4.186; // J/g°C
+        const densityOfWater = 1; // g/cm³
+        const solarEnergyInput = 1000; // W/m²
+
+        const volumePerSecond = volume / 60; // L/min to L/s
+        const massOfWater = volumePerSecond * 1000; // L to g
+
+        const energyOutput = massOfWater * specificHeatCapacity * tempRise; // J/s (W)
+        const efficiency = (energyOutput / solarEnergyInput) * 100; // as percentage
+
+        document.getElementById(
+          "result"
+        ).innerText = `Efficiency: ${efficiency.toFixed(2)}%`;
+        document.getElementById("result").style.color = "#007bff";
+
+        animateEfficiency(efficiency);
+      }
+
+      function animateEfficiency(efficiency) {
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let start = 0;
+        const duration = 1000; // 1 second
+        const initialHeight = 0;
+        const finalHeight = efficiency * 2;
+
+        function drawFrame(timestamp) {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const height =
+            initialHeight + progress * (finalHeight - initialHeight);
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Draw the fluid
+          ctx.fillStyle = "#007bff";
+          ctx.fillRect(0, 100, 400, 100);
+
+          // Draw the efficiency bar
+          ctx.fillStyle = "rgba(255, 0, 0, 0.7)";
+          ctx.fillRect(50, 100 - height, 300, height);
+
+          ctx.fillStyle = "#000";
+          ctx.font = "16px Arial";
+          ctx.fillText(`Efficiency: ${efficiency.toFixed(2)}%`, 150, 90);
+
+          if (progress < 1) {
+            requestAnimationFrame(drawFrame);
+          }
+        }
+
+        requestAnimationFrame(drawFrame);
+      }
+    </script>
+  </body>
+</html>
